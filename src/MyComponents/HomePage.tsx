@@ -151,7 +151,7 @@ const otherItemDataToDisplay: OtherDisplay[] = [
 ]
 export function HomePage(props: Props) {
 
-  const { handleRequestEntry, isReadyForRequest, saveEntry, savingRef,logout, api, setShowRejectModal, refetchImg, reloadingImg, reloadData } = props
+  const { handleRequestEntry, isReadyForRequest, saveEntry, savingRef, logout, api, setShowRejectModal, refetchImg, reloadingImg, reloadData } = props
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { calculateAllItemsData } = useItemCalculations();
@@ -438,6 +438,57 @@ export function HomePage(props: Props) {
     return
 
   }
+
+  const isInstructionMisMatch = (value: any, ocr_data: any, tabIndex: number) => {
+
+
+    if (value === undefined && ocr_data === null || value === null && ocr_data === undefined || value === "" && ocr_data === "") {
+      return false
+    }
+    if (value !== ocr_data) {
+
+      if (!Cookies.get("tabIndex")) {
+        Cookies.set("tabIndex", JSON.stringify([tabIndex]), coookie_options)
+        return true
+      }
+
+      let indexes = JSON.parse(Cookies.get("tabIndex") || "")
+      if (!indexes.includes(tabIndex)) {
+        indexes.push(tabIndex)
+        Cookies.set("tabIndex", JSON.stringify(indexes), coookie_options)
+      }
+      return true
+    }
+
+
+  }
+  const isItemMisMatch = (value: any, ocr_data: any, tabIndex: number) => {
+
+
+    console.log("org", value)
+    console.log("ocr", ocr_data)
+    if (value === undefined && ocr_data === null || value === null && ocr_data === undefined || value === "" && ocr_data === "") {
+      return false
+    }
+    if (value !== ocr_data) {
+
+      if (!Cookies.get("tabIndex")) {
+        Cookies.set("tabIndex", JSON.stringify([tabIndex]), coookie_options)
+        return true
+      }
+
+      let indexes = JSON.parse(Cookies.get("tabIndex") || "")
+      if (!indexes.includes(tabIndex)) {
+        indexes.push(tabIndex)
+        Cookies.set("tabIndex", JSON.stringify(indexes), coookie_options)
+      }
+      return true
+    }
+
+
+  }
+
+
   // Function to handle key press events
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, index: number, property: string) => {
     e.preventDefault()
@@ -447,7 +498,7 @@ export function HomePage(props: Props) {
       if (!isQc()) return
       setPressedKey(1)
       let d = ocr_data?.request_json?.instructions?.lines[index][property]
-      
+
       dispatch(changeInstructionsData({ parent_property: "lines", index, property: property, newValue: d }))
       inputRef.current = e.currentTarget;
       if (inputRef.current) {
@@ -477,7 +528,7 @@ export function HomePage(props: Props) {
         setPressedKey(null)
         if (inputRef.current) {
           inputRef.current.style.backgroundColor = "transparent"
-       }
+        }
         return
       }
       setPressedKey(3)
@@ -517,16 +568,16 @@ export function HomePage(props: Props) {
 
 
 
-    if (e.altKey && e.key  === "1") {
+    if (e.altKey && e.key === "1") {
       e.preventDefault()
       if (!isQc()) return
       setPressedKey(1)
-      let d =""
+      let d = ""
 
       try {
-       d= ocr_data?.request_json?.items[index][property]
+        d = ocr_data?.request_json?.items[index][property]
       } catch (error) {
-        d= ""
+        d = ""
       }
       dispatch(changeItemData({ newValue: d, index, property: property }))
       itemRef.current = e.currentTarget;
@@ -555,7 +606,7 @@ export function HomePage(props: Props) {
         setPressedKey(null)
         if (itemRef.current) {
           itemRef.current.style.backgroundColor = "transparent"
-       }
+        }
         return
       }
       setPressedKey(3)
@@ -594,7 +645,7 @@ export function HomePage(props: Props) {
   }
 
   useEffect(() => {
- 
+
     const inputs = document.querySelectorAll('input');
     inputs.forEach(input => {
       input.style.backgroundColor = "transparent";
@@ -604,7 +655,7 @@ export function HomePage(props: Props) {
       inputRef.current.style.backgroundColor = "transparent"
     }
     if (itemRef.current) {
-  
+
       itemRef.current.style.backgroundColor = "transparent"
     }
 
@@ -612,7 +663,19 @@ export function HomePage(props: Props) {
 
     itemRef.current = null
 
-  }, [original_data, ocr_data,savingRef])
+  }, [original_data, ocr_data, savingRef])
+  const getItemTabIndex = (i: number) => {
+    let instructionLength: number = 0
+
+    if (instructions) {
+      if (instructions.lines) {
+        instructionLength = instructions.lines.length
+      }
+
+    }
+    return (37 + i + 1 + instructionLength)
+  }
+
   return (
 
     <div className={cn(requesting ? "cursor-wait" : "", "max-h-100")}  >
@@ -723,7 +786,7 @@ export function HomePage(props: Props) {
                       <MenubarItem className="mt-2">
                         <BookOpenIcon className="w-4 h-4 mr-2" /> Ocr Data <MenubarShortcut className="text-white p-1 border-none rounded-full bg-green-900">Alt + 1</MenubarShortcut>
                       </MenubarItem>
-                 
+
                       <MenubarItem>
                         <PencilLine className="w-4 h-4 mr-2" /> Edit <MenubarShortcut className="text-white p-1 border-none rounded-full bg-yellow-600"> Alt + 3</MenubarShortcut>
                       </MenubarItem>
@@ -987,10 +1050,12 @@ export function HomePage(props: Props) {
 
                                   <div className="w-1/6">
                                     <AccountsInputWrapper instructions={instructions} label={`${index}-Instruction`} value={td.lines[index].content || ""} identifier={"instructions"} isInstruction={true} itemIndex={index} >
-                                      <div className="flex flex-col w-full gap-y-2">
+                                      <div className={"flex flex-col w-full gap-y-2"}>
                                         <Label className="text-red-800 dark:text-white">Code</Label>
                                         {isQc() && <p className="ml-1 text-green-900 font-bold" >{getInstructionOcrData(index, 1) || <span className="text-transparent">d</span>}</p>}
-                                        <Input id={`inst${index}`} onBlur={() => setPressedKey(null)} tabIndex={37 + (index + 1)} onKeyDown={(e) => handleKeyPress(e, index, "code")} className=" dark:focus:bg-slate-800 focus:bg-blue-100 focus-visible:ring-offset-0 focus-visible:ring-0 " disabled={requesting} key={index} value={td.lines[index].code} onChange={(e) => hanleOnChange(e.target.value, index, "code")} />
+                                        <Input id={`inst${index}`} onBlur={() => setPressedKey(null)} tabIndex={37 + (index + 1)} onKeyDown={(e) => handleKeyPress(e, index, "code")}
+                                          className={cn(isInstructionMisMatch(td.lines[index].code, getInstructionOcrData(index, 1), (37 + (index + 1))) ? "border border-red-600 rounded-md" : "", " dark:focus:bg-slate-800 focus:bg-blue-100 focus-visible:ring-offset-0 focus-visible:ring-0 ")}
+                                          disabled={requesting} key={index} value={td.lines[index].code} onChange={(e) => hanleOnChange(e.target.value, index, "code")} />
 
                                       </div>
                                     </AccountsInputWrapper>
@@ -999,13 +1064,15 @@ export function HomePage(props: Props) {
 
                                     <AccountsInputWrapper instructions={instructions} label={`${index}-Instruction`} value={td.lines[index].content || ""} identifier={"instructions"} isInstruction={true} itemIndex={index} >
 
-                                      <div className="flex flex-col w-full gap-y-2">
+                                      <div className={"flex flex-col w-full gap-y-2"}>
                                         <Label className="text-red-800 dark:text-white">Description</Label>
                                         {isQc() && <p className="ml-1 text-green-900 font-bold" >{getInstructionOcrData(index, 2) || <span className="text-transparent">d</span>}</p>}
                                         <Input onBlur={() => setPressedKey(null)}
                                           tabIndex={37 + (index + 2)}
                                           id={`inst-content${index}`}
-                                          onKeyDown={(e) => handleKeyPress(e, index, "content")} className=" dark:focus:bg-slate-800 focus:bg-blue-100 focus-visible:ring-offset-0 focus-visible:ring-0 " disabled={requesting} key={index} value={td.lines[index].content} onChange={(e) => hanleOnChange(e.target.value, index, "content")} />
+                                          onKeyDown={(e) => handleKeyPress(e, index, "content")}
+                                          className={cn(isInstructionMisMatch(td.lines[index].content, getInstructionOcrData(index, 2), (37 + (index + 2))) ? "border border-red-600 rounded-md" : "", " dark:focus:bg-slate-800 focus:bg-blue-100 focus-visible:ring-offset-0 focus-visible:ring-0 ")}
+                                          disabled={requesting} key={index} value={td.lines[index].content} onChange={(e) => hanleOnChange(e.target.value, index, "content")} />
 
                                       </div>
                                     </AccountsInputWrapper>
@@ -1060,11 +1127,13 @@ export function HomePage(props: Props) {
                               <TableRow key={index}>
                                 <TableCell className="px-1" >
                                   <AccountsInputWrapper label={`${index}-Pallet`} value={item.pallet || ""} identifier={"pallet"} isItem={true} itemIndex={index} >
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col  ">
                                       {isQc() && <p className="ml-2 text-green-900 font-bold" >{getItemData(index, "pallet") || <span className="text-transparent">d</span>}</p>}
-                                      <Input className=" dark:focus:bg-slate-800 focus:bg-blue-100  focus-visible:ring-offset-0 focus-visible:ring-0 " disabled={requesting} value={item.pallet}
+                                      <Input className={cn(isItemMisMatch(item.pallet, getItemData(index, "pallet"), getItemTabIndex(index + 1)) ? " border-2 border-red-700" : "", "  dark:focus:bg-slate-800 focus:bg-blue-100  focus-visible:ring-offset-0 focus-visible:ring-0 ")}
+                                        disabled={requesting} value={item.pallet}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "pallet")}
                                         onKeyDown={(e) => handleItemKeyPress(e, index, "pallet")}
+                                        tabIndex={getItemTabIndex(index + 1)}
                                       />
                                     </div>
                                   </AccountsInputWrapper>
@@ -1073,9 +1142,11 @@ export function HomePage(props: Props) {
                                   <AccountsInputWrapper label={`${index}-Handling Unit`} value={item.handlingUnit || ""} identifier={"handlingUnit"} isItem={true} itemIndex={index} >
                                     <div className="flex flex-col">
                                       {isQc() && <p className="ml-2 text-green-900 font-bold" >{getItemData(index, "handlingUnit") || <span className="text-transparent">d</span>}</p>}
-                                      <Input className="dark:focus:bg-slate-800 focus:bg-blue-100  focus-visible:ring-offset-0 focus-visible:ring-0 " disabled={requesting} value={item.handlingUnit}
+                                      <Input className={cn(isItemMisMatch(item.handlingUnit, getItemData(index, "handlingUnit"), getItemTabIndex(index + 2)) ? " border-2 border-red-700" : "", "  dark:focus:bg-slate-800 focus:bg-blue-100  focus-visible:ring-offset-0 focus-visible:ring-0 ")}
+                                        disabled={requesting} value={item.handlingUnit}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "handlingUnit")}
                                         onKeyDown={(e) => handleItemKeyPress(e, index, "handlingUnit")}
+                                        tabIndex={getItemTabIndex(index + 2)}
                                       />
                                     </div>
 
@@ -1085,9 +1156,12 @@ export function HomePage(props: Props) {
                                   <AccountsInputWrapper label={`${index}-Package Type`} value={item.packageType || ""} identifier={"packageType"} isItem={true} itemIndex={index} >
                                     <div className="flex flex-col">
                                       {isQc() && <p className="ml-2 text-green-900 font-bold" >{getItemData(index, "packageType") || <span className="text-transparent">d</span>}</p>}
-                                      <Input className="dark:focus:bg-slate-800 focus:bg-blue-100  focus-visible:ring-offset-0 focus-visible:ring-0 " disabled={requesting} value={item.packageType}
+                                      <Input className={cn(isItemMisMatch(item.packageType, getItemData(index, "packageType"), getItemTabIndex(index + 3)) ? " border-2 border-red-700" : "", "  dark:focus:bg-slate-800 focus:bg-blue-100  focus-visible:ring-offset-0 focus-visible:ring-0 ")}
+                                        disabled={requesting} value={item.packageType}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "packageType")}
-                                        onKeyDown={(e) => handleItemKeyPress(e, index, "packageType")} />
+                                        onKeyDown={(e) => handleItemKeyPress(e, index, "packageType")}
+                                        tabIndex={getItemTabIndex(index + 3)} />
+
                                     </div>
                                   </AccountsInputWrapper>
                                 </TableCell>
@@ -1099,12 +1173,16 @@ export function HomePage(props: Props) {
 
                                       <Input className={cn(
                                         {
+                                          " border-2 border-red-700": isItemMisMatch(item.pieces, getItemData(index, "pieces"), getItemTabIndex(index + 4))
+                                        },
+                                        {
                                           " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${index}-pieces`),
                                         },
                                         " focus:bg-blue-100 dark:focus:bg-slate-800  focus-visible:ring-offset-0 focus-visible:ring-0  "
                                       )} disabled={requesting} value={item.pieces}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "pieces")}
                                         onKeyDown={(e) => handleItemKeyPress(e, index, "pieces")}
+                                        tabIndex={getItemTabIndex(index + 4)}
                                       />
                                       {renderErr(`${index}-pieces`)}
 
@@ -1115,9 +1193,11 @@ export function HomePage(props: Props) {
                                   <AccountsInputWrapper label={`${index}-Description`} value={item.description || ""} identifier={"description"} isItem={true} itemIndex={index} >
                                     <div className="flex flex-col w-full">
                                       {isQc() && <p className="ml-2 text-green-900 font-bold" >{getItemData(index, "description") || <span className="text-transparent">d</span>}</p>}
-                                      <Input className="dark:focus:bg-slate-800 focus:bg-blue-100  focus-visible:ring-offset-0 focus-visible:ring-0 " disabled={requesting} value={item.description}
+                                      <Input className={cn(isItemMisMatch(item.description, getItemData(index, "description"), getItemTabIndex(index + 5)) ? " border-2 border-red-700" : "", "  dark:focus:bg-slate-800 focus:bg-blue-100  focus-visible:ring-offset-0 focus-visible:ring-0 ")}
+                                        disabled={requesting} value={item.description}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "description")}
                                         onKeyDown={(e) => handleItemKeyPress(e, index, "description")}
+                                        tabIndex={getItemTabIndex(index + 5)}
                                       />
                                     </div>
                                   </AccountsInputWrapper>
@@ -1130,6 +1210,9 @@ export function HomePage(props: Props) {
                                       <Input
                                         className={cn(
                                           {
+                                            " border-2 border-red-700": isItemMisMatch(item.weight, getItemData(index, "weight"), getItemTabIndex(index + 6))
+                                          },
+                                          {
                                             " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${index}-weight`),
                                           },
                                           " focus:bg-blue-100 dark:focus:bg-slate-800  focus-visible:ring-offset-0 focus-visible:ring-0  "
@@ -1137,6 +1220,7 @@ export function HomePage(props: Props) {
                                         disabled={requesting} value={item.weight}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "weight")}
                                         onKeyDown={(e) => handleItemKeyPress(e, index, "weight")}
+                                        tabIndex={getItemTabIndex(index + 6)}
                                       />
                                       {renderErr(`${index}-weight`)}
 
@@ -1149,12 +1233,16 @@ export function HomePage(props: Props) {
                                     <AccountsInputWrapper label={`${index}-Item Class`} value={item.itemClass || ""} identifier={"itemClass"} isItem={true} itemIndex={index} >
                                       <Input className={cn(
                                         {
+                                          " border-2 border-red-700": isItemMisMatch(item.itemClass, getItemData(index, "itemClass"), getItemTabIndex(index + 7))
+                                        },
+                                        {
                                           " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${index}-itemClass`),
                                         },
                                         " focus:bg-blue-100 dark:focus:bg-slate-800  focus-visible:ring-offset-0 focus-visible:ring-0  "
                                       )} disabled={requesting} value={item.itemClass}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "itemClass")}
                                         onKeyDown={(e) => handleItemKeyPress(e, index, "itemClass")}
+                                        tabIndex={getItemTabIndex(index + 7)}
                                       />
                                       {renderErr(`${index}-itemClass`)}
                                     </AccountsInputWrapper>
@@ -1166,12 +1254,16 @@ export function HomePage(props: Props) {
                                     <AccountsInputWrapper label={`${index}-NMFC`} value={item.nmfc || ""} identifier={"nmfc"} isItem={true} itemIndex={index} >
                                       <Input className={cn(
                                         {
+                                          " border-2 border-red-700": isItemMisMatch(item.nmfc, getItemData(index, "nmfc"), getItemTabIndex(index + 8))
+                                        },
+                                        {
                                           " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${index}-nmfc`),
                                         },
                                         " focus:bg-blue-100  dark:focus:bg-slate-800 focus-visible:ring-offset-0 focus-visible:ring-0  "
                                       )} disabled={requesting} value={item.nmfc}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "nmfc")}
                                         onKeyDown={(e) => handleItemKeyPress(e, index, "nmfc")}
+                                        tabIndex={getItemTabIndex(index + 8)}
                                       />
                                       {renderErr(`${index}-nmfc`)}
                                     </AccountsInputWrapper>
@@ -1183,12 +1275,16 @@ export function HomePage(props: Props) {
                                     <AccountsInputWrapper label={`${index}-Dimension`} value={item.dimension || ""} identifier={"dimension"} isItem={true} itemIndex={index} >
                                       <Input className={cn(
                                         {
+                                          " border-2 border-red-700": isItemMisMatch(item.dimension, getItemData(index, "dimension"), getItemTabIndex(index + 9))
+                                        },
+                                        {
                                           " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${index}-dimension`),
                                         },
                                         " focus:bg-blue-100  dark:focus:bg-slate-800 focus-visible:ring-offset-0 focus-visible:ring-0  "
                                       )} disabled={requesting} value={item.dimension}
                                         onChange={(e) => hanleOnItemChange(e.target.value, index, "dimension")}
                                         onKeyDown={(e) => handleItemKeyPress(e, index, "dimension")}
+                                        tabIndex={getItemTabIndex(index + 9)}
                                       />
                                       {renderErr(`${index}-dimension`)}
                                     </AccountsInputWrapper>

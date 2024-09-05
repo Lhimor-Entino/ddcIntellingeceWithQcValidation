@@ -278,102 +278,113 @@ export function Accounts(props: AccountProps) {
     }, [original_data, savingRef])
 
 
-    const isMisMatch = (value: any, ocr_data: any) => {
+    const isMisMatch = (value: any, ocr_data: any, tabIndex: number) => {
 
 
         if (value === undefined && ocr_data === null || value === null && ocr_data === undefined || value === "" && ocr_data === "") {
             return false
         }
         if (value !== ocr_data) {
+
+
+            if (!Cookies.get("tabIndex")) {
+                Cookies.set("tabIndex", JSON.stringify([tabIndex]), coookie_options)
+                return true
+            }
+
+            
+            let indexes = JSON.parse(Cookies.get("tabIndex") || "")
+            if(!indexes.includes(tabIndex)){
+                indexes.push(tabIndex)
+                Cookies.set("tabIndex", JSON.stringify(indexes), coookie_options)
+            }
+            
             return true
         }
 
-        if(identifier !== "consignee" && identifier !=="shipper"){
-            console.log("value : " , value, "ocr : ", ocr_data)
-        }
- 
-    }
 
-    const getValueOcrVal_ = (property: string) => {
-
-        console.log(ocr_data)
-        if (identifier === "consignee") {
-            try {
-                return ocr_data.request_json.consignee[property];
-            } catch (error) {
-                return undefined;
-            }
-
-        }
-
-        if (identifier === "shipper") {
-            try {
-                return ocr_data.request_json.shipper[property]
-
-            } catch (error) {
-                return undefined;
-            }
-        }
-        try {
-            return ocr_data.request_json.billTo[property]
-
-        } catch (error) {
-            return undefined;
-        }
 
     }
 
-    const obj = [{ field: "code", pos: 0 },
-    { field: "name", pos: 1 },
-    { field: "addressLine1", pos: 2 },
-    { field: "addressLine2", pos: 3 },
-    { field: "city", pos: 4 },
-    { field: "state", pos: 5 },
-    { field: "zipCode", pos: 6 },
-    { field: "phone", pos: 7 },
-    { field: "contactName", pos: 8 }]
-    const getOriginalValue_ = (property: string) => {
+    // const getValueOcrVal_ = (property: string) => {
 
-        if (identifier === "consignee") {
-            try {
-                return original_data.request_json.consignee[property];
-            } catch (error) {
-                return undefined;
-            }
+    //     console.log(ocr_data)
+    //     if (identifier === "consignee") {
+    //         try {
+    //             return ocr_data.request_json.consignee[property];
+    //         } catch (error) {
+    //             return undefined;
+    //         }
 
-        }
+    //     }
 
-        if (identifier === "shipper") {
-            try {
-                return original_data.request_json.shipper[property]
+    //     if (identifier === "shipper") {
+    //         try {
+    //             return ocr_data.request_json.shipper[property]
 
-            } catch (error) {
-                return undefined;
-            }
-        }
-        try {
-            return original_data.request_json.billTo[property]
+    //         } catch (error) {
+    //             return undefined;
+    //         }
+    //     }
+    //     try {
+    //         return ocr_data.request_json.billTo[property]
 
-        } catch (error) {
-            return undefined;
-        }
-    }
+    //     } catch (error) {
+    //         return undefined;
+    //     }
 
-    useEffect(() => {
-        obj.map((o, index) => {
+    // }
 
-            if (isMisMatch(getOriginalValue_(o.field), getValueOcrVal_(o.field))) {
-        
-                let indexes = JSON.parse(Cookies.get("tabIndex") || "")
-                
-          
-                indexes.push(getTabIndex(o.pos))
-             
-                Cookies.set("tabIndex", JSON.stringify(indexes), coookie_options)
-            }
+    // const obj = [{ field: "code", pos: 0 },
+    // { field: "name", pos: 1 },
+    // { field: "addressLine1", pos: 2 },
+    // { field: "addressLine2", pos: 3 },
+    // { field: "city", pos: 4 },
+    // { field: "state", pos: 5 },
+    // { field: "zipCode", pos: 6 },
+    // { field: "phone", pos: 7 },
+    // { field: "contactName", pos: 8 }]
+    // const getOriginalValue_ = (property: string) => {
 
-        })
-    }, [identifier])
+    //     if (identifier === "consignee") {
+    //         try {
+    //             return original_data.request_json.consignee[property];
+    //         } catch (error) {
+    //             return undefined;
+    //         }
+
+    //     }
+
+    //     if (identifier === "shipper") {
+    //         try {
+    //             return original_data.request_json.shipper[property]
+
+    //         } catch (error) {
+    //             return undefined;
+    //         }
+    //     }
+    //     try {
+    //         return original_data.request_json.billTo[property]
+
+    //     } catch (error) {
+    //         return undefined;
+    //     }
+    // }
+
+    // useEffect(() => {
+    //     obj.map((o, index) => {
+
+    //         if (isMisMatch(getOriginalValue_(o.field), getValueOcrVal_(o.field))) {
+
+
+
+    //             let indexes = JSON.parse(Cookies.get("tabIndex") || "")
+    //             indexes.push(getTabIndex(o.pos))         
+    //             Cookies.set("tabIndex", JSON.stringify(indexes), coookie_options)
+    //         }
+
+    //     })
+    // }, [identifier])
     return (
         <>
             <TableLookup identifier={identifier} openLookUp={openLookUp} tableLookUp={tableLookUp} setOpenLookUp={setOpenLookUp} />
@@ -409,7 +420,7 @@ export function Accounts(props: AccountProps) {
 
                             <div className="flex flex-col gap-2 w-full">
                                 {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.name || <span className="text-transparent">d</span>}</p>}
-                                <div className={cn(isMisMatch(getValueOcrVal()?.name , getOriginalValue()?.name) ? "border border-red-600 rounded-md" : "", " flex relative  ")}>
+                                <div className={cn(isMisMatch(getValueOcrVal()?.name, getOriginalValue()?.name, getTabIndex(1)) ? "border border-red-600 rounded-md" : "", " flex relative  ")}>
 
                                     <Input onKeyDown={(e) => handleKeyPress(e, getTabIndex(2), "name", getValueOcrVal()?.name, getOriginalValue()?.name)} tabIndex={getTabIndex(1)} className={cn(
                                         {
@@ -431,7 +442,7 @@ export function Accounts(props: AccountProps) {
                         <div className="flex flex-col gap-2 w-full">
                             {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.addressLine1}</p>}
                             {/* <div className="flex relative w-full"> */}
-                            <div className={cn(isMisMatch(getValueOcrVal()?.addressLine1 , getOriginalValue()?.addressLine1) ? "border border-red-600 rounded-md" : "", " flex relative w-full ")}>
+                            <div className={cn(isMisMatch(getValueOcrVal()?.addressLine1, getOriginalValue()?.addressLine1, getTabIndex(2)) ? "border border-red-600 rounded-md" : "", " flex relative w-full ")}>
 
                                 <Input onKeyDown={(e) => handleKeyPress(e, getTabIndex(3), "addressLine1", getValueOcrVal()?.addressLine1, getOriginalValue()?.addressLine1)} tabIndex={getTabIndex(2)} className={cn(
                                     {
@@ -454,7 +465,7 @@ export function Accounts(props: AccountProps) {
                         <div className="flex flex-col gap-2 w-full">
                             {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.addressLine2}</p>}
                             {/* <div className="flex relative w-full"> */}
-                            <div className={cn(isMisMatch(getValueOcrVal()?.addressLine2 , getOriginalValue()?.addressLine2) ? "border border-red-600 rounded-md" : "", " flex relati w-full  ")}>
+                            <div className={cn(isMisMatch(getValueOcrVal()?.addressLine2, getOriginalValue()?.addressLine2, getTabIndex(3)) ? "border border-red-600 rounded-md" : "", " flex relati w-full  ")}>
                                 <Input onKeyDown={(e) => handleKeyPress(e, getTabIndex(4), "addressLine2", getValueOcrVal()?.addressLine2, getOriginalValue()?.addressLine2)} tabIndex={getTabIndex(3)} className={cn(
                                     {
                                         " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${identifier}-addressLine2`),
@@ -476,7 +487,7 @@ export function Accounts(props: AccountProps) {
                         <div className="flex flex-col gap-2 w-full">
                             {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.city || <span className="text-transparent">d</span>}</p>}
                             {/* <div className="flex relative w-full"> */}
-                            <div className={cn(isMisMatch(getValueOcrVal()?.city , getOriginalValue()?.city) ? "border border-red-600 rounded-md" : "", " flex relative w-full  ")}>
+                            <div className={cn(isMisMatch(getValueOcrVal()?.city, getOriginalValue()?.city, getTabIndex(4)) ? "border border-red-600 rounded-md" : "", " flex relative w-full  ")}>
                                 <Input onKeyDown={(e) => handleKeyPress(e, getTabIndex(5), "city", getValueOcrVal()?.city, getOriginalValue()?.city)} tabIndex={getTabIndex(4)} disabled={requesting || noData} className={cn(
                                     {
                                         " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${identifier}-city`),
@@ -496,7 +507,7 @@ export function Accounts(props: AccountProps) {
                         <div className="flex flex-col gap-2 w-full">
                             {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.state || <span className="text-transparent">d</span>}</p>}
                             {/* <div className="flex relative w-full"> */}
-                            <div className={cn(isMisMatch(getValueOcrVal()?.state , getOriginalValue()?.state) ? "border border-red-600 rounded-md" : "", " flex relative w-full  ")}>
+                            <div className={cn(isMisMatch(getValueOcrVal()?.state, getOriginalValue()?.state, getTabIndex(5)) ? "border border-red-600 rounded-md" : "", " flex relative w-full  ")}>
                                 <Input onKeyDown={(e) => handleKeyPress(e, getTabIndex(6), "state", getValueOcrVal()?.state, getOriginalValue()?.state)} tabIndex={getTabIndex(5)} disabled={requesting || noData} className={cn(
                                     {
                                         " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${identifier}-state`),
@@ -516,7 +527,7 @@ export function Accounts(props: AccountProps) {
                         <div className="flex flex-col gap-2 w-full">
                             {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.zipCode || <span className="text-transparent">d</span>}</p>}
                             {/* <div className="flex relative"> */}
-                            <div className={cn(isMisMatch(getValueOcrVal()?.zipCode , getOriginalValue()?.zipCode) ? "border border-red-600 rounded-md" : "", " flex relative  ")}>
+                            <div className={cn(isMisMatch(getValueOcrVal()?.zipCode, getOriginalValue()?.zipCode, getTabIndex(6)) ? "border border-red-600 rounded-md" : "", " flex relative  ")}>
                                 <Input onKeyDown={(e) => handleKeyPress(e, getTabIndex(7), "zipCode", getValueOcrVal()?.zipCode, getOriginalValue()?.zipCode)} tabIndex={getTabIndex(6)} disabled={requesting || noData} className={cn(
                                     {
                                         " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${identifier}-zipCode`),
@@ -538,7 +549,7 @@ export function Accounts(props: AccountProps) {
                             <div className="flex flex-col gap-2 w-full">
                                 {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.phone || <span className="text-transparent">d</span>}</p>}
                                 {/* <div className="flex relative w-full"> */}
-                                <div className={cn(isMisMatch(getValueOcrVal()?.phone , getOriginalValue()?.phone) ? "border border-red-600 rounded-md" : "", " flex relative w-full  ")}>
+                                <div className={cn(isMisMatch(getValueOcrVal()?.phone, getOriginalValue()?.phone, getTabIndex(7)) ? "border border-red-600 rounded-md" : "", " flex relative w-full  ")}>
                                     <Input onKeyDown={(e) => handleKeyPress(e, getTabIndex(8), "phone", getValueOcrVal()?.phone, getOriginalValue()?.phone)} tabIndex={getTabIndex(7)} className={cn(
                                         {
                                             " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${identifier}-phone`),
@@ -560,7 +571,7 @@ export function Accounts(props: AccountProps) {
                             <div className="flex flex-col gap-2 w-full">
                                 {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.contactName || <span className="text-transparent">d</span>}</p>}
                                 {/* <div className="flex relative w-full"> */}
-                                <div className={cn(isMisMatch(getValueOcrVal()?.contactName , getOriginalValue()?.contactName) ? "border border-red-600 rounded-md" : "", " flex relative w-full  ")}>
+                                <div className={cn(isMisMatch(getValueOcrVal()?.contactName, getOriginalValue()?.contactName, getTabIndex(8)) ? "border border-red-600 rounded-md" : "", " flex relative w-full  ")}>
                                     <Input tabIndex={getTabIndex(8)} onKeyDown={(e) => handleKeyPress(e, getTabIndex(8), "contactName", getValueOcrVal()?.contactName, getOriginalValue()?.contactName)} className={cn(
                                         {
                                             " shadow-sm shadow-red-500 text-red-700 font-semibold": renderErr(`${identifier}-contactName`),

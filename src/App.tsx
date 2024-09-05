@@ -69,8 +69,7 @@ function App() {
   const viewRef = useRef(smallScreenView)
   const imgRef = useRef(showImageViewer)
 
-  const [currentIndex, setCurrentIndex] = useState<number>(0)
-  const currentIndexRef = useRef(currentIndex)
+
   useEffect(() => {
     requestDataRef.current = request_data;
     requestModeRef.current = request_data.auto_request;
@@ -110,7 +109,12 @@ function App() {
 
       }
 
-      if (event.altKey && event.key === "1") {
+      if (event.altKey && event.key === "1" || event.altKey && event.key === "2") {
+        if (!Cookies.get("role")) {
+          console.log("no role")
+          return
+        }
+        if (Cookies.get("role") !== "ROLE_QC") return
 
         const tabIndexes = JSON.parse(Cookies.get("tabIndex") || "")
 
@@ -118,24 +122,28 @@ function App() {
         const tabIndexOrder = Array.from(new Set(tabIndexes));
 
         // Sort the array in ascending order
-        tabIndexOrder.sort((a:any, b:any) => a - b);
-     
+        tabIndexOrder.sort((a: any, b: any) => a - b);
+
         // Prevent the default action (if needed)
         event.preventDefault();
-console.log(tabIndexOrder)
         const focusableElements = 'input';
         const elements = Array.from(document.querySelectorAll(focusableElements)) as HTMLElement[];
 
         const currentElement = document.activeElement as HTMLElement | null;
-        if (currentElement && elements.includes(currentElement)) {
-          const nextTabIndex = tabIndexOrder[currentIndexRef.current];
-          console.log(nextTabIndex)
-          const nextElement = elements.find(el => parseInt(el.getAttribute('tabindex') || '0', 10) === nextTabIndex);
-          const upIndex = currentIndex + 1
-          setCurrentIndex(upIndex)
-          currentIndexRef.current = currentIndexRef.current + 1
-          nextElement?.focus()
 
+
+        if (currentElement && elements.includes(currentElement)) {
+          currentElement.style.color = ""
+          currentElement.style.fontWeight = ""
+          const current_tabIndex = currentElement.getAttribute('tabindex') || "0";
+
+          const index_in_tab_list = tabIndexOrder.indexOf(parseInt(current_tabIndex)) + 1;
+          const nextTabIndex = tabIndexOrder[index_in_tab_list];
+          const nextElement = elements.find(el => parseInt(el.getAttribute('tabindex') || '0', 10) === nextTabIndex);
+          nextElement?.focus()
+          if (!nextElement) return
+          nextElement.style.color = "red"
+          nextElement.style.fontWeight = "bold"
         } else {
           // If no current element or it's not in the list, focus the first element
           if (elements.length > 0) {
@@ -144,27 +152,29 @@ console.log(tabIndexOrder)
         }
       }
       if (event.altKey && event.key === "2") {
-        // Prevent the default action (if needed)
-        event.preventDefault();
 
-        const focusableElements = 'input';
-        const elements = Array.from(document.querySelectorAll(focusableElements)) as HTMLElement[];
 
-        const currentElement = document.activeElement as HTMLElement | null;
+        // // Prevent the default action (if needed)
+        // event.preventDefault();
 
-        console.log(currentElement)
-        if (currentElement && elements.includes(currentElement)) {
-          const currentIndex = elements.indexOf(currentElement);
-          const nextIndex = (currentIndex + 1) % elements.length;
+        // const focusableElements = 'input';
+        // const elements = Array.from(document.querySelectorAll(focusableElements)) as HTMLElement[];
 
-          // Focus the next element
-          elements[nextIndex]?.focus();
-        } else {
-          // If no current element or it's not in the list, focus the first element
-          if (elements.length > 0) {
-            elements[0]?.focus();
-          }
-        }
+        // const currentElement = document.activeElement as HTMLElement | null;
+
+        // console.log(currentElement)
+        // if (currentElement && elements.includes(currentElement)) {
+        //   const currentIndex = elements.indexOf(currentElement);
+        //   const nextIndex = (currentIndex + 1) % elements.length;
+
+        //   // Focus the next element
+        //   elements[nextIndex]?.focus();
+        // } else {
+        //   // If no current element or it's not in the list, focus the first element
+        //   if (elements.length > 0) {
+        //     elements[0]?.focus();
+        //   }
+        // }
       }
       if (event.key === "F8") {
         event.preventDefault()
