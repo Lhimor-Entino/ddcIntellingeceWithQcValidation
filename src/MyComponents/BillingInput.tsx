@@ -234,7 +234,11 @@ export const BillingInput = (props: Props) => {
                 Cookies.set("tabIndex",JSON.stringify(indexes),coookie_options)
                 const focusableElements = 'input';
                 const elements = Array.from(document.querySelectorAll(focusableElements)) as HTMLElement[];
-                elements[pos -1].focus()
+
+                
+                elements[pos].focus()
+                console.log(elements[pos])
+                // elements[pos].style.border = "3px solid #9A031E"
                 return
             } 
         

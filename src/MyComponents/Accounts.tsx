@@ -365,8 +365,8 @@ export function Accounts(props: AccountProps) {
             if (isMisMatch(getOriginalValue_(o.field), getValueOcrVal_(o.field))) {
         
                 let indexes = JSON.parse(Cookies.get("tabIndex") || "")
-                alert(indexes)
-                alert(getTabIndex(o.pos))
+                
+          
                 indexes.push(getTabIndex(o.pos))
              
                 Cookies.set("tabIndex", JSON.stringify(indexes), coookie_options)

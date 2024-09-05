@@ -393,7 +393,7 @@ console.log(tabIndexOrder)
         Cookies.remove("request_info")
         Cookies.remove("img_urls")
         Cookies.remove("original_request_data")
-
+        Cookies.remove("tabIndex")
         dispatch(changeSavingStatus({ newValue: false }))
         savingRef.current = false
 

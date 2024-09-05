@@ -47,6 +47,7 @@ const LogoutModal = (props: Props) => {
                 Cookies.remove("role")
                 Cookies.remove("client")
                 Cookies.remove("request_ts")
+                Cookies.remove("tabIndex")
                 setLoggingOut(false)
                 navigate("login")
             }
