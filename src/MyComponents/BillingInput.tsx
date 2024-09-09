@@ -223,8 +223,8 @@ export const BillingInput = (props: Props) => {
 
     
         if(!Cookies.get("role")) return false
-        if(Cookies.get("role") !== "ROLE_QC" && Cookies.get("role") !== "ROLE_AUDITOR"  ) return false
-                if(!Cookies.get("request_ocr_json")) return false
+        if(Cookies.get("role") !== "ROLE_QC" && Cookies.get("role") !== "ROLE_AUDITOR" ) return false
+        if(!Cookies.get("request_ocr_json")) return false
         if(value === undefined && ocr_data === null || value === null && ocr_data === undefined || value === undefined && ocr_data === undefined || value === null && ocr_data === null || value === "" && ocr_data === "" ) {
             return false
         } 
@@ -298,7 +298,8 @@ export const BillingInput = (props: Props) => {
         <div className="w-full">
 
             <Label className="text-red-800 dark:text-white">{label}
-                {Cookies.get("role") === "ROLE_QC" && <span className="ml-5 text-green-900 font-bold" >{ocr_data}</span>}
+               
+                {Cookies.get("role") === "ROLE_QC" || Cookies.get("role") === "ROLE_AUDITOR"  ? <span className="ml-5 text-green-900 font-bold" >{ocr_data }</span>:""}
             </Label>
             {
                 Cookies.get("role") === "ROLE_QC" &&

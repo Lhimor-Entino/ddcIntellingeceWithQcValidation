@@ -109,7 +109,7 @@ function App() {
 
       }
 
-      if (event.altKey && event.key === "1" || event.altKey && event.key === "2") {
+      if (event.altKey && event.key === "1" || event.altKey && event.key === "2" || event.key ==="Enter") {
         event.preventDefault();
         if (!Cookies.get("role")) {
           console.log("no role")

@@ -22,9 +22,9 @@ import {
 import AccountsInputWrapper from "./AccountsInputWrapper";
 import { AxiosInstance } from "axios";
 import Cookies from "js-cookie";
-import useAuthValidatorAlerts from "@/hooks/authValidatorAlerts";
+// import useAuthValidatorAlerts from "@/hooks/authValidatorAlerts";
 import TableLookup from "./TableLookup";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { coookie_options } from "@/config";
 // import { addIndex } from "@/reducers/TabIndex";
 interface AccountProps {
@@ -36,15 +36,15 @@ interface AccountProps {
 
 export function Accounts(props: AccountProps) {
     const dispatch = useDispatch();
-    const { tokenExpired } = useAuthValidatorAlerts();
-    const { identifier, api, savingRef } = props
+    //const { tokenExpired } = useAuthValidatorAlerts();
+    const { identifier, savingRef } = props
     const request_data = useSelector((state: any) => state.request_reducer);
     const ocr_data = useSelector((state: any) => state.ocr_data);
     const original_data = useSelector((state: any) => state.original_request_reducer);
     // const dataFields_: InfoFields = useMemo(() => identifier === "consignee" ? request_data.request_json.consignee : identifier === "shipper" ? request_data.request_json.shipper : request_data.request_json.billTo, [request_data, request_data.request_json]);
     const requesting = useMemo(() => request_data.requesting, [request_data]);
     const validation_data = useSelector((state: any) => state.validation_Reducer);
-    const [tableLookUp, setTableLookUp] = useState<TableLookUp[]>([])
+    const [tableLookUp, _setTableLookUp] = useState<TableLookUp[]>([])
     const [noData, _setNoData] = useState<boolean>(false)
     const [openLookUp, setOpenLookUp] = useState<boolean>(false)
 
@@ -125,45 +125,45 @@ export function Accounts(props: AccountProps) {
 
         return original_data.request_json.billTo
     }
-    const getTableLookup = async () => {
+    // const getTableLookup = async () => {
 
-        try {
+    //     try {
 
-            const response = await api.get(`/lookup/search?type=${identifier}&address=${getValue()?.addressLine1}&name=${getValue()?.name}`, {
-                // const response = await api.get(`/lookup/search?type=shipper&address=THOMASTON DELUXE FEEDS&name=KENT NUTRITION GROUP`, {
-                headers: {
-                    'Authorization': `Bearer ${Cookies.get("jt")}`
-                },
-            })
-            if (response.data.details) {
-                setTableLookUp(response.data.details.list)
-                console.log(response)
-                setOpenLookUp(true)
-            } else {
-                toast.info('Nothing found ', {
-                    description: 'No table lookup available',
-                    duration: 3000
-                })
-            }
-        } catch (error: any) {
-            console.log(error)
-            if (error.response?.data.status == "403") {
-                tokenExpired()
-            }
-        }
-    }
+    //         const response = await api.get(`/lookup/search?type=${identifier}&address=${getValue()?.addressLine1}&name=${getValue()?.name}`, {
+    //             // const response = await api.get(`/lookup/search?type=shipper&address=THOMASTON DELUXE FEEDS&name=KENT NUTRITION GROUP`, {
+    //             headers: {
+    //                 'Authorization': `Bearer ${Cookies.get("jt")}`
+    //             },
+    //         })
+    //         if (response.data.details) {
+    //             setTableLookUp(response.data.details.list)
+    //             console.log(response)
+    //             setOpenLookUp(true)
+    //         } else {
+    //             toast.info('Nothing found ', {
+    //                 description: 'No table lookup available',
+    //                 duration: 3000
+    //             })
+    //         }
+    //     } catch (error: any) {
+    //         console.log(error)
+    //         if (error.response?.data.status == "403") {
+    //             tokenExpired()
+    //         }
+    //     }
+    // }
 
-    const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        e.preventDefault()
-        const val = e.target.value
-        if (val === "?") {
-            getTableLookup()
-        } else {
-            dispatch(changeBillingInfoData({ newValue: val, parent_property: identifier, child_property: "code", }))
-        }
+    // const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     e.preventDefault()
+    //     const val = e.target.value
+    //     if (val === "?") {
+    //         getTableLookup()
+    //     } else {
+    //         dispatch(changeBillingInfoData({ newValue: val, parent_property: identifier, child_property: "code", }))
+    //     }
 
 
-    }
+    // }
     // Function to handle key press events
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, tabIndex: number | null, child_property?: string, ocr_data?: string, original_data?: string) => {
         if (e.altKey && e.key === "1") {
@@ -394,15 +394,15 @@ export function Accounts(props: AccountProps) {
             <TableLookup identifier={identifier} openLookUp={openLookUp} tableLookUp={tableLookUp} setOpenLookUp={setOpenLookUp} />
 
 
-            <div className="grid gap-2">
+            <div className="grid gap-2 " >
 
-                <div className="grid grid-cols-3 gap-2">
-                    <div className="grid gap-2 col-span-1 ">
+                <div className="grid grid-cols-1 ">
+                    {/* <div className="grid gap-2 col-span-1 ">
                         <AccountsInputWrapper label={"Code"} value={getValue()?.code || ""} identifier={identifier || ""} property={'code'} isAccount={true}>
 
                             <div className="flex flex-col gap-2">
 
-                                {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.code || <span className="text-transparent">d</span>}</p>}
+                                {isQc() && <p className="ml-1 text-green-900 font-bold">{getValueOcrVal()?.code  || <span className="text-transparent">d</span>}</p>}
                                 <div className="flex relative w-full">
                                     <>
 
@@ -418,8 +418,9 @@ export function Accounts(props: AccountProps) {
                                 </div>
                             </div>
                         </AccountsInputWrapper>
-                    </div>
-                    <div className="grid gap-2 col-span-2">
+                    </div> */}
+                    {/* <div className="grid gap-2 col-span-2"> */}
+                    <div className="grid">
                         <AccountsInputWrapper label={"Name"} value={getValue()?.name || ""} identifier={identifier || ""} property={'name'} isAccount={true}>
 
                             <div className="flex flex-col gap-2 w-full">

@@ -36,7 +36,7 @@ const LogoutModal = (props: Props) => {
                 }
             })
 
-            if (response.data.status == "200") {
+            if (response.data.status == "200" ) {
                 Cookies.remove("jt")
                 Cookies.remove("image_expiration")
                 Cookies.remove("img_urls")
@@ -57,6 +57,22 @@ const LogoutModal = (props: Props) => {
             console.log(error)
             if (error.response.data.status == "403") {
                 tokenExpired()
+            }
+            if (error.response.data.status =="400") {
+                Cookies.remove("jt")
+                Cookies.remove("image_expiration")
+                Cookies.remove("img_urls")
+                Cookies.remove("original_request_data")
+                Cookies.remove("request_ocr_json")
+                Cookies.remove("request_info")
+                Cookies.remove("request_json")
+                Cookies.remove("user")
+                Cookies.remove("role")
+                Cookies.remove("client")
+                Cookies.remove("request_ts")
+                Cookies.remove("tabIndex")
+                setLoggingOut(false)
+                navigate("login")
             }
         }finally{
             setLoading(false)

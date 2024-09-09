@@ -181,6 +181,7 @@ export function HomePage(props: Props) {
   const { tokenExpired } = useAuthValidatorAlerts();
 
   const [pressedKey, setPressedKey] = useState<any>(null)
+  const [instructionPressedKey, setInstructionPressedKey] = useState<any>(null)
   const inputRef = useRef<HTMLInputElement | null>(null);
   const itemRef = useRef<HTMLInputElement | null>(null);
   const disableBillingInput = (field: string) => {
@@ -496,12 +497,13 @@ export function HomePage(props: Props) {
 
   // Function to handle key press events
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, index: number, property: string) => {
-    e.preventDefault()
+
     if (e.altKey && e.key === "1") {
 
       e.preventDefault()
       if (!isQc()) return
-      setPressedKey(1)
+      // setPressedKey(1)
+      setInstructionPressedKey(1)
       let d = ocr_data?.request_json?.instructions?.lines[index][property]
 
       dispatch(changeInstructionsData({ parent_property: "lines", index, property: property, newValue: d }))
@@ -515,8 +517,8 @@ export function HomePage(props: Props) {
 
       e.preventDefault()
       if (!isQc()) return
-      setPressedKey(2)
-
+  //    setPressedKey(2)
+      setInstructionPressedKey(2)
       let d = original_data?.request_json?.instructions?.lines[index][property]
 
       dispatch(changeInstructionsData({ parent_property: "lines", index, property: property, newValue: d }))
@@ -531,13 +533,14 @@ export function HomePage(props: Props) {
       if (!isQc()) return
 
       if (pressedKey === 3) {
-        setPressedKey(null)
+        setInstructionPressedKey(null)
         if (inputRef.current) {
           inputRef.current.style.backgroundColor = "transparent"
         }
         return
       }
-      setPressedKey(3)
+      //setPressedKey(3)
+      setInstructionPressedKey(3)
       inputRef.current = e.currentTarget;
       if (inputRef.current) {
         inputRef.current.style.backgroundColor = '#FABC3F'; // or any color you like
@@ -548,22 +551,25 @@ export function HomePage(props: Props) {
 
   };
   const hanleOnChange = (value: string, index: number, property: string) => {
-    alert("S")
+ 
     console.log(value)
     if (Cookies.get("role") === "ROLE_QC" || Cookies.get("role") === "ROLE_AUDITOR") {
       console.log("hessre")
-      if (pressedKey === 1) {
-        setPressedKey(null)
+      console.log(instructionPressedKey)
+      if (instructionPressedKey === 1) {
+        setInstructionPressedKey(null)
+        
         return
       }
-      if (pressedKey === 2) {
-        setPressedKey(null)
+      if (instructionPressedKey === 2) {
+        setInstructionPressedKey(null)
         return
       }
-      if (pressedKey === 3) {
-        setPressedKey(3)
+      if (instructionPressedKey === 3) {
+        setInstructionPressedKey(3)
         console.log("update")
-        dispatch(changeInstructionsData({ parent_property: "lines", index, property: property, newValue: value }))
+        console.log(value)
+        dispatch(changeInstructionsData({ parent_property: "lines", index, property: "content", newValue: value }))
         return
       }
       return
@@ -798,7 +804,7 @@ export function HomePage(props: Props) {
                       </MenubarContent>
                     </MenubarMenu>
 
-                    {Cookies.get("role") === "ROLE_QC" && <MenubarMenu>
+                    {isQc()  && <MenubarMenu>
                       <MenubarTrigger className="border-r-2 border-white dark:border-slate-900  pr-5">
                         <FileScanIcon className="w-4 h-4 mr-2" /> QC</MenubarTrigger>
                       <MenubarContent className="w-60">
@@ -1022,7 +1028,7 @@ export function HomePage(props: Props) {
                         <CardHeader>
                           <CardTitle className="text-sm text-red-800 dark:text-white uppercase font-extrabold">Shipper (Ship From)</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent >
                           <Accounts savingRef={savingRef} identifier="shipper" api={api} key={2} label="shipper (ship from)" />
                         </CardContent>
                       </Card>
@@ -1087,12 +1093,16 @@ export function HomePage(props: Props) {
                                         <Label className="text-red-800 dark:text-white">Description </Label>
                                         {isQc() && <p className="ml-1 text-green-900 font-bold" >{getInstructionOcrData(index, 2) || <span className="text-transparent">d</span>}</p>}
                                         <Input
-                                          onBlur={() => setPressedKey(null)}
+                                          onBlur={() => setInstructionPressedKey(null)}
                                           tabIndex={37 + (index + 2)}
                                           id={`inst-content${index}`}
-                                          onKeyDown={(e) => handleKeyPress(e, index, "content")}
+                                        onKeyDown={(e) => handleKeyPress(e, index, "content")}
                                           className={cn(isInstructionMisMatch(td.lines[index].content, getInstructionOcrData(index, 2), (37 + (index + 2))) ? "border border-red-600 rounded-md" : "", " dark:focus:bg-slate-800 focus:bg-blue-100 focus-visible:ring-offset-0 focus-visible:ring-0 ")}
-                                          disabled={requesting} key={index} value={td.lines[index].content} onChange={(e) => hanleOnChange(e.target.value, index, "code")} />
+                                          disabled={requesting} key={index} value={td.lines[index].content} 
+                                    onChange={(e) => hanleOnChange(e.target.value, index, "code")}
+                              //       onChange={(e) =>  dispatch(changeInstructionsData({ parent_property: "lines", index, property: "content", newValue: e.target.value }))}
+                                     
+                                           />
 
                                       </div>
                                     </AccountsInputWrapper>
