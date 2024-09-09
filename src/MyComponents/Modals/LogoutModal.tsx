@@ -41,6 +41,7 @@ const LogoutModal = (props: Props) => {
                 Cookies.remove("image_expiration")
                 Cookies.remove("img_urls")
                 Cookies.remove("original_request_data")
+                Cookies.remove("request_ocr_json")
                 Cookies.remove("request_info")
                 Cookies.remove("request_json")
                 Cookies.remove("user")

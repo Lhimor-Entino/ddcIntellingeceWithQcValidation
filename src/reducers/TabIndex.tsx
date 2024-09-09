@@ -10,7 +10,7 @@ const themeSlice = createSlice({
   reducers: {
     addIndex: (state, action) => {
       const { newValue } = action.payload;
-      console.log(newValue)
+
       state.tabIndex.push(newValue) ;
     },
    

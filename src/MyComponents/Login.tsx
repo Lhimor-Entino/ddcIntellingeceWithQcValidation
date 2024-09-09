@@ -34,7 +34,7 @@ const Login = (props: Props) => {
    // const [savingCredentials,setSavingCredentials] = useState<boolean>(false)
     const navigate = useNavigate();
 
-    const accepted_role = ["ROLE_QC", "ROLE_VERIFIER"];
+    const accepted_role = ["ROLE_QC", "ROLE_VERIFIER","ROLE_AUDITOR"];
 
     const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();

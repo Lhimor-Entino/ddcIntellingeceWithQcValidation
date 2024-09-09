@@ -110,13 +110,21 @@ function App() {
       }
 
       if (event.altKey && event.key === "1" || event.altKey && event.key === "2") {
+        event.preventDefault();
         if (!Cookies.get("role")) {
           console.log("no role")
           return
         }
-        if (Cookies.get("role") !== "ROLE_QC") return
+        if (Cookies.get("role") !== "ROLE_QC" &&  Cookies.get("role") !== "ROLE_AUDITOR") return
+        if(!Cookies.get("request_ocr_json")) return false
 
-        const tabIndexes = JSON.parse(Cookies.get("tabIndex") || "")
+        let tabIndexes = null
+        if(Cookies.get("tabIndex")){
+          tabIndexes = JSON.parse(Cookies.get("tabIndex") || "")
+        }else{
+          tabIndexes = null
+        }
+        
 
         // Remove duplicates by converting the array to a Set
         const tabIndexOrder = Array.from(new Set(tabIndexes));
@@ -124,8 +132,9 @@ function App() {
         // Sort the array in ascending order
         tabIndexOrder.sort((a: any, b: any) => a - b);
 
+        console.log(tabIndexOrder)
         // Prevent the default action (if needed)
-        event.preventDefault();
+      
         const focusableElements = 'input';
         const elements = Array.from(document.querySelectorAll(focusableElements)) as HTMLElement[];
 
@@ -137,8 +146,10 @@ function App() {
           currentElement.style.fontWeight = ""
           const current_tabIndex = currentElement.getAttribute('tabindex') || "0";
 
+          console.log("current", current_tabIndex)
           const index_in_tab_list = tabIndexOrder.indexOf(parseInt(current_tabIndex)) + 1;
           const nextTabIndex = tabIndexOrder[index_in_tab_list];
+          console.log("nextTabIndex", nextTabIndex)
           const nextElement = elements.find(el => parseInt(el.getAttribute('tabindex') || '0', 10) === nextTabIndex);
           nextElement?.focus()
           if (!nextElement) return
@@ -151,31 +162,7 @@ function App() {
           }
         }
       }
-      if (event.altKey && event.key === "2") {
 
-
-        // // Prevent the default action (if needed)
-        // event.preventDefault();
-
-        // const focusableElements = 'input';
-        // const elements = Array.from(document.querySelectorAll(focusableElements)) as HTMLElement[];
-
-        // const currentElement = document.activeElement as HTMLElement | null;
-
-        // console.log(currentElement)
-        // if (currentElement && elements.includes(currentElement)) {
-        //   const currentIndex = elements.indexOf(currentElement);
-        //   const nextIndex = (currentIndex + 1) % elements.length;
-
-        //   // Focus the next element
-        //   elements[nextIndex]?.focus();
-        // } else {
-        //   // If no current element or it's not in the list, focus the first element
-        //   if (elements.length > 0) {
-        //     elements[0]?.focus();
-        //   }
-        // }
-      }
       if (event.key === "F8") {
         event.preventDefault()
         return
@@ -403,24 +390,32 @@ function App() {
         Cookies.remove("request_info")
         Cookies.remove("img_urls")
         Cookies.remove("original_request_data")
+        Cookies.remove("request_ocr_json")
         Cookies.remove("tabIndex")
         dispatch(changeSavingStatus({ newValue: false }))
         savingRef.current = false
 
         if (requestModeRef.current) {
+          const request_json = { newValue: {}, property: "request_json" };
+          dispatch(changeData(request_json))
+          dispatch(changeOcrProperty(request_json))
+     
           isReadyForRequest()
+    
         }
         else {
 
           const request_info = { newValue: {}, property: "request_info" };
           const img_urls = { newValue: [], property: "img_urls" };
           const request_json = { newValue: {}, property: "request_json" };
-
+         
           dispatch(changeRequestProperty(request_info))
           dispatch(changeRequestProperty(img_urls))
           dispatch(changeRequestProperty(request_json))
           //     dispatch(changeVerifiedProperty(request_json))
           dispatch(changeData(request_json))
+          dispatch(changeOcrProperty(request_json))
+
         }
 
 
@@ -605,6 +600,13 @@ function App() {
           })
           request_json = { newValue: response3.data, property: "request_json" };
         }
+
+        await api.get(`/document/start-process/${filename}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+      
+        })
 
         const request_info = { newValue: response1.data, property: "request_info" };
         const img_urls = { newValue: [url], property: "img_urls" };

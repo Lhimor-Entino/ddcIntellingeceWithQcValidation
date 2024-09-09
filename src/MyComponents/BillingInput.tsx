@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import AccountsInputWrapper from "./AccountsInputWrapper";
 import Cookies from "js-cookie";
 import { useEffect, useRef, useState } from "react";
-import { addIndex } from "@/reducers/TabIndex";
+
 import { coookie_options } from "@/config";
 interface Props {
     label: string;
@@ -105,6 +105,11 @@ export const BillingInput = (props: Props) => {
 
     };
 
+    const isQc = () => {
+        if (Cookies.get("role") === "ROLE_QC" || Cookies.get("role") ==="ROLE_AUDITOR" ) return true
+
+        return false
+    }
     // Function to handle key press events
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, tabIndex: number) => {
 
@@ -114,7 +119,7 @@ export const BillingInput = (props: Props) => {
         if (e.altKey && e.key === "1") {
            
             e.preventDefault()
-            if (Cookies.get("role") !== "ROLE_QC") return
+            if (!isQc()) return
             setPressedKey(1)
             dispatch(changeOtherData({ newValue: ocr_data, property }))
             inputRef.current = e.currentTarget;
@@ -127,7 +132,7 @@ export const BillingInput = (props: Props) => {
             
             e.preventDefault()
 
-            if (Cookies.get("role") !== "ROLE_QC") return
+            if (!isQc()) return
             setPressedKey(2)
             dispatch(changeOtherData({ newValue: original_data, property }))
             inputRef.current = e.currentTarget;
@@ -139,9 +144,11 @@ export const BillingInput = (props: Props) => {
         if (e.altKey && e.key === "3") {
            
             e.preventDefault()
-      
 
-            if (Cookies.get("role") !== "ROLE_QC") return
+
+            if (!isQc()) return
+
+ 
             if (pressedKey === 3) {
                 setPressedKey(null)
                 if (inputRef.current) {
@@ -178,7 +185,7 @@ export const BillingInput = (props: Props) => {
 
     const hanleOnChange = (value: string) => {
 
-        if (Cookies.get("role") === "ROLE_QC") {
+        if (Cookies.get("role") === "ROLE_QC" || Cookies.get("role") === "ROLE_AUDITOR") {
 
             if (pressedKey === 1) {
                 setPressedKey(null)
@@ -212,20 +219,29 @@ export const BillingInput = (props: Props) => {
 
     // }
 
-    const isMisMatch = () => {
-        if(value === undefined && ocr_data === null || value === null && ocr_data === undefined ) {
+    const isMisMatch = (val:string,ocr:string) => {
+
+    
+        if(!Cookies.get("role")) return false
+        if(Cookies.get("role") !== "ROLE_QC" && Cookies.get("role") !== "ROLE_AUDITOR"  ) return false
+                if(!Cookies.get("request_ocr_json")) return false
+        if(value === undefined && ocr_data === null || value === null && ocr_data === undefined || value === undefined && ocr_data === undefined || value === null && ocr_data === null || value === "" && ocr_data === "" ) {
             return false
         } 
-        if(value !== ocr_data){
-            return true
+
+        let trimed_value = val
+        let ocr_data_value = ocr
+   
+
+        if(val !== undefined){
+            trimed_value = val.toString().trim()
         }
+        if(ocr !== undefined){
+            ocr_data_value = ocr.toString().trim()
+        }
+        
+        if(trimed_value !== ocr_data_value){
 
-      
-    }
-    useEffect(()=> {
-
-        if(isMisMatch()){
-            console.log("value : ",value, "ocr : " ,ocr_data)
             if(pos === 0) return
             let indexes :any = []
             if(!Cookies.get("tabIndex")){
@@ -235,7 +251,6 @@ export const BillingInput = (props: Props) => {
                 const focusableElements = 'input';
                 const elements = Array.from(document.querySelectorAll(focusableElements)) as HTMLElement[];
 
-                
                 elements[pos].focus()
                 console.log(elements[pos])
                 // elements[pos].style.border = "3px solid #9A031E"
@@ -244,11 +259,41 @@ export const BillingInput = (props: Props) => {
         
             indexes = JSON.parse(Cookies.get("tabIndex") || "")
             indexes.push(pos)
+            
+            console.log("insert after save ", property, " : " , pos, "value : ", value, "ocr_data : " , ocr_data)
             Cookies.set("tabIndex",JSON.stringify(indexes),coookie_options)
-           // dispatch(addIndex({newValue : pos}))
+            return true
         }
+
+      
+    }
+    // useEffect(()=> {
+
+    //     if(isMisMatch()){
+    //         console.log("value : ",value, "ocr : " ,ocr_data)
+    //         if(pos === 0) return
+    //         let indexes :any = []
+    //         if(!Cookies.get("tabIndex")){
+
+    //             indexes = [pos]
+    //             Cookies.set("tabIndex",JSON.stringify(indexes),coookie_options)
+    //             const focusableElements = 'input';
+    //             const elements = Array.from(document.querySelectorAll(focusableElements)) as HTMLElement[];
+
+                
+    //             elements[pos].focus()
+    //             console.log(elements[pos])
+    //             // elements[pos].style.border = "3px solid #9A031E"
+    //             return
+    //         } 
+        
+    //         indexes = JSON.parse(Cookies.get("tabIndex") || "")
+    //         indexes.push(pos)
+    //         Cookies.set("tabIndex",JSON.stringify(indexes),coookie_options)
+    //        // dispatch(addIndex({newValue : pos}))
+    //     }
        
-    },[value,ocr_data])
+    // },[value,ocr_data])
     return (
         <div className="w-full">
 
@@ -279,7 +324,7 @@ export const BillingInput = (props: Props) => {
                 <Input className="mt-1" disabled={true} value={""} onChange={() => { }} />
                 : */}
             <AccountsInputWrapper label={label} value={value || ""} identifier={property || ""} isAccount={false}>
-                <div className= { cn(isMisMatch() && !disable ? "border border-red-600 rounded-md": "" ,"relative flex w-full p-0") }>
+                <div className= { cn(isMisMatch(value,ocr_data) && !disable ? "border border-red-600 rounded-md": "" ,"relative flex w-full p-0") }>
                     <Input onKeyDown={(e) => handleKeyPress(e, pos)} tabIndex={pos} id={`${property}`} 
                     className={cn(renderErr(`${property}`) ?
                         "shadow-sm shadow-red-500 text-red-700 font-semibold" :

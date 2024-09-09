@@ -5,6 +5,7 @@ import { validateState, validateAccountName, validateAddress, validateCity, vali
 const useValidation = () => {
   const dispatch = useDispatch();
 
+
   const validateConsignee = (request_data: any) => {
     const state_res = validateState(request_data.request_json.consignee?.state);
     const account_name_res = validateAccountName(request_data.request_json.consignee?.name);

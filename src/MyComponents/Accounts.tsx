@@ -26,6 +26,7 @@ import useAuthValidatorAlerts from "@/hooks/authValidatorAlerts";
 import TableLookup from "./TableLookup";
 import { toast } from "sonner";
 import { coookie_options } from "@/config";
+// import { addIndex } from "@/reducers/TabIndex";
 interface AccountProps {
     api: AxiosInstance
     identifier?: string
@@ -232,7 +233,7 @@ export function Accounts(props: AccountProps) {
 
     const handleOnChange = (value: string, child_property: string) => {
 
-        if (Cookies.get("role") === "ROLE_QC") {
+        if (Cookies.get("role") === "ROLE_QC" || Cookies.get("role") === "ROLE_AUDITOR") {
 
             if (pressedKey === 1) {
                 setPressedKey(null)
@@ -257,7 +258,7 @@ export function Accounts(props: AccountProps) {
         dispatch(changeBillingInfoData({ newValue: value, parent_property: identifier, child_property: child_property, }))
     }
     const isQc = () => {
-        if (Cookies.get("role") === "ROLE_QC") return true
+        if (Cookies.get("role") === "ROLE_QC" || Cookies.get("role") ==="ROLE_AUDITOR" ) return true
 
         return false
     }
@@ -279,14 +280,16 @@ export function Accounts(props: AccountProps) {
 
 
     const isMisMatch = (value: any, ocr_data: any, tabIndex: number) => {
-
-
+        if(!Cookies.get("role")) return false
+        if(Cookies.get("role") !== "ROLE_QC" && Cookies.get("role") !== "ROLE_AUDITOR" ) return false
+        if(!Cookies.get("request_ocr_json")) return false
+        
         if (value === undefined && ocr_data === null || value === null && ocr_data === undefined || value === "" && ocr_data === "") {
             return false
         }
         if (value !== ocr_data) {
 
-
+         //   dispatch(addIndex(newValue: tabIndex))
             if (!Cookies.get("tabIndex")) {
                 Cookies.set("tabIndex", JSON.stringify([tabIndex]), coookie_options)
                 return true
@@ -295,6 +298,7 @@ export function Accounts(props: AccountProps) {
             
             let indexes = JSON.parse(Cookies.get("tabIndex") || "")
             if(!indexes.includes(tabIndex)){
+                console.log("added Index" ,tabIndex)
                 indexes.push(tabIndex)
                 Cookies.set("tabIndex", JSON.stringify(indexes), coookie_options)
             }
