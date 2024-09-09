@@ -548,6 +548,7 @@ export function HomePage(props: Props) {
 
   };
   const hanleOnChange = (value: string, index: number, property: string) => {
+    alert("S")
     console.log(value)
     if (Cookies.get("role") === "ROLE_QC" || Cookies.get("role") === "ROLE_AUDITOR") {
       console.log("hessre")

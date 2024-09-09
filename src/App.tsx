@@ -572,7 +572,7 @@ function App() {
 
         let request_json: any = "";
 
-        if (Cookies.get("role") === "ROLE_QC") {
+        if (Cookies.get("role") === "ROLE_QC" || Cookies.get("role") === "ROLE_AUDITOR" ) {
 
           const response3 = await api.get(`/document/get-verified-data/${client}/${filename}`, {
             headers: {
